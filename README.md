@@ -1,3 +1,7 @@
+# SOSO-Ground-Station-Mock
+
+Repo for ground stations.
+
 # How to run the program
 
 ## Basic setup
