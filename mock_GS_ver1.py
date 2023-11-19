@@ -1,13 +1,14 @@
 ## Version 1:
 ## Imports
+
+from czml import czml
 from skyfield.api import load, EarthSatellite, Topos
 from datetime import timedelta, datetime
+from math import atan, degrees
 import matplotlib.pyplot as plt
 import json
-from czml import czml
 import numpy as np
-from math import atan, degrees
-
+from mock_SAT_ver2 import load_satellites, ephemeris_power_schedule_start_end, location_satellite, eclipse_sunlight, image_validation
 
 ## Step 1: Ground Station Class
 class GroundStation:
@@ -20,34 +21,52 @@ class GroundStation:
         self.uplink_rate = uplink_rate
         self.downlink_rate = downlink_rate
 
+# Downlink & Uplink Transfer Times
+def simulate_uplink(self, data_size):
+    # Simulate uplink data transfer
+    # Memory Scrubs, Maintainence, Outage Requests
+    transfer_time = data_size / self.uplink_rate
+    return transfer_time
+
+def simulate_downlink(self, data_size):
+    # Simulate downlink data transfer
+    # Image Orders
+    transfer_time = data_size / self.downlink_rate
+    return transfer_time
+
 # Create ground stations
 inuvik_station = GroundStation("Inuvik", 68.3195, -133.549, 102.5, 5, 40000, 100000000)
 prince_albert_station = GroundStation("Prince Albert", 53.2124, -105.934, 490.3, 5, 40000, 100000000)
 gatineau_station = GroundStation("Gatineau", 45.5846, -75.8083, 240.1, 5, 40000, 100000000)
 
-# Step 5: Loop over the ground stations (Preconfiguration, Elevation constraint, and Access Points)
-for ground_station in [inuvik_station, prince_albert_station, gatineau_station]:
-    ground_station_topos = Topos(ground_station.latitude, ground_station.longitude)
+satellites = load_satellites()
+ts = load.timescale()
 
-    # Get the position of the satellite relative to the ground station at the start and end times
-    relative_position_start = (satellite - ground_station_topos).at(start_time_skyfield)
-    relative_position_end = (satellite - ground_station_topos).at(end_time_skyfield)
+# Step 2: Loop over the ground stations (Preconfiguration, Elevation constraint, and Access Points)
+for satellite in satellites:
+    for ground_station in [inuvik_station, prince_albert_station, gatineau_station]:
+        ground_station_topos = Topos(ground_station.latitude, ground_station.longitude)
 
-    # Get the altitude (elevation) of the satellite from the perspective of the ground station
-    elevation_angle_start = relative_position_start.altaz()[0]
-    elevation_angle_end = relative_position_end.altaz()[0]
+        # Get the position of the satellite relative to the ground station at the start and end times
+        start_time_skyfield, end_time_skyfield = ephemeris_power_schedule_start_end(satellite)
+        relative_position_start = (satellite - ground_station_topos).at(start_time_skyfield)
+        relative_position_end = (satellite - ground_station_topos).at(end_time_skyfield)
 
-    # Check if the satellite is above the ground station's mask angle at both start and end times
-    if elevation_angle_start.degrees > ground_station.mask and elevation_angle_end.degrees > ground_station.mask:
-        print(f"The satellite is visible from {ground_station.name} between {start_time} and {end_time} with elevations of {elevation_angle_start.degrees} to {elevation_angle_end.degrees} degrees.")
-        # Preconfigure the ground station for 5 minutes before communication
-        t0 = start_time
-        t1 = t0 + timedelta(seconds=5)  # 5 minutes
-        print(f"Preconfiguring {ground_station.name} for communication with the satellite...")
-        print(f"Start time: {t0}")
-        print(f"End time: {t1}")
-    else:
-        print(f"The satellite is not visible from {ground_station.name} between {start_time} and {end_time}.")
+        # Get the altitude (elevation) of the satellite from the perspective of the ground station
+        elevation_angle_start = relative_position_start.altaz()[0]
+        elevation_angle_end = relative_position_end.altaz()[0]
+
+        # Check if the satellite is above the ground station's mask angle at both start and end times
+        if elevation_angle_start.degrees > ground_station.mask and elevation_angle_end.degrees > ground_station.mask:
+            print(f"The satellite is visible from {ground_station.name} between {start_time_skyfield} and {end_time_skyfield} with elevations of {elevation_angle_start.degrees} to {elevation_angle_end.degrees} degrees.")
+            # Preconfigure the ground station for 5 minutes before communication
+            t0 = start_time_skyfield
+            t1 = t0 + timedelta(seconds=5)  # 5 minutes
+            print(f"Preconfiguring {ground_station.name} for communication with the satellite...")
+            print(f"Start time: {t0}")
+            print(f"End time: {t1}")
+        else:
+            print(f"The satellite is not visible from {ground_station.name} between {start_time_skyfield} and {end_time_skyfield}.")
 
 # Create a list to store access points for each ground station
 access_points = {}
@@ -60,8 +79,8 @@ def is_in_contact(satellite, ground_station, time):
     return elevation_angle.degrees > ground_station.mask
 
 # Iterate through the time interval minute by minute
-current_time = start_time
-while current_time < end_time:
+current_time = start_time_skyfield
+while current_time < end_time_skyfield:
     current_time_skyfield = ts.utc(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second)
     
     for ground_station in [inuvik_station, prince_albert_station, gatineau_station]:
@@ -72,7 +91,7 @@ while current_time < end_time:
                     "Access Timestamp End": []
                 }
             access_points[ground_station.name]["Access Timestamp Start"].append(current_time.strftime('%Y-%m-%d %H:%M:%S'))
-            while current_time < end_time:
+            while current_time < end_time_skyfield:
                 current_time += timedelta(minutes=1)
                 current_time_skyfield = ts.utc(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second)
                 if not is_in_contact(satellite, ground_station, current_time_skyfield):
@@ -91,8 +110,8 @@ for ground_station, timestamps in access_points.items():
 satellite_access = {ground_station.name: None for ground_station in [inuvik_station, prince_albert_station, gatineau_station]}
 
 # Iterate through the time interval minute by minute
-current_time = start_time
-while current_time < end_time:
+current_time = start_time_skyfield
+while current_time < end_time_skyfield:
     current_time_skyfield = ts.utc(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second)
     
     for ground_station in [inuvik_station, prince_albert_station, gatineau_station]:
@@ -106,7 +125,7 @@ while current_time < end_time:
                         "Satellite Name": []  # Initialize the 'Satellite Name' list
                     }
                 access_points[ground_station.name]["Access Timestamp Start"].append(current_time.strftime('%Y-%m-%d %H:%M:%S'))
-                while current_time < end_time:
+                while current_time < end_time_skyfield:
                     current_time += timedelta(minutes=1)
                     current_time_skyfield = ts.utc(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute, current_time.second)
                     if not is_in_contact(satellite, ground_station, current_time_skyfield):
@@ -131,17 +150,6 @@ for ground_station, data in access_points.items():
         print(f"Access Timestamp End: {data['Access Timestamp End'][i]}")
         print(f"Satellite Name: {data['Satellite Name'][i]}")
         print()
-        
-# Downlink & Uplink Transfer Times
-def simulate_uplink(self, data_size):
-    # Simulate uplink data transfer
-    transfer_time = data_size / self.uplink_rate
-    return transfer_time
-
-def simulate_downlink(self, data_size):
-    # Simulate downlink data transfer
-    transfer_time = data_size / self.downlink_rate
-    return transfer_time
 
 # Sample for Satellites
 class EarthSatellite:
