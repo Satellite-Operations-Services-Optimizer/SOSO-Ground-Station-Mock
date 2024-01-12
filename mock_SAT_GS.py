@@ -284,9 +284,9 @@ def simulate_downlink(self, data_size):
     return transfer_time
 
 # Create ground stations
-inuvik_station = GroundStation("Inuvik", 68.3195, -133.549, 102.5, 5, "40kbps", "100Mbps")
-prince_albert_station = GroundStation("Prince Albert", 53.2124, -105.934, 490.3, 5, "40kbps", "100Mbps")
-gatineau_station = GroundStation("Gatineau", 45.5846, -75.8083, 240.1, 5, "40kbps", "100Mbps")
+inuvik_station = GroundStation("Inuvik", 68.3195, -133.549, 102.5, 5, 40000, 100000000)
+prince_albert_station = GroundStation("Prince Albert", 53.2124, -105.934, 490.3, 5, 40000, 100000000)
+gatineau_station = GroundStation("Gatineau", 45.5846, -75.8083, 240.1, 5, 40000, 100000000)
 
 # Step 5: Loop over the ground stations (Preconfiguration, Elevation constraint, and Access Points)
 for ground_station in [inuvik_station, prince_albert_station, gatineau_station]:
