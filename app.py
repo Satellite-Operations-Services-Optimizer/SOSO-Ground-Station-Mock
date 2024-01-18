@@ -1,4 +1,7 @@
 from flask import Flask, request, jsonify
+from fastapi.encoders import jsonable_encoder
+from datetime import datetime
+from Models import schedule
 
 app = Flask(__name__)
 
@@ -39,6 +42,29 @@ def add_image_request():
     
 @app.route('/ActivityRequest/general', methods=['POST'])
 def sendActivityRequest():
+    requestBody = request.get_json()
+    
+    return jsonify(requestBody), 200
+
+@app.route('/satellite_schedule', methods=['POST'])
+def recieveSatelliteSchedule():
+    data = request.get_json()
+    
+    try:
+        # Validate request data
+        sat_schedule = schedule(**data)
+        recieved_schedule = jsonable_encoder(sat_schedule)
+        
+        return recieved_schedule , 200
+    except (KeyError, ValueError) as e:
+        print(e)
+        return jsonify({"error": "Invalid request data."}), 400
+       
+        
+    
+
+@app.route('/ground_station_schedule', methods=['POST'])
+def recieveGroundStationSchedule():
     requestBody = request.get_json()
     
     return jsonify(requestBody), 200
