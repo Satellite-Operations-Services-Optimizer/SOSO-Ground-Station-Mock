@@ -1,22 +1,45 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, timedelta
 from typing import Optional
-
-class schedule(BaseModel):
-    id: int
-    satellite_id:int
-    ground_station_id: int
-    asset_type: int
+class image_activity(BaseModel):
+    image_id: int
+    type: str
+    priority: str
     start_time: datetime
-    end_time: datetime
-    status: str
-
-       
-class ground_station_schedule(BaseModel):
-    id: int
-    satellite_id:int
-    ground_station_id: int
-    asset_type: int
+    
+class maintenance_activity(BaseModel):
+    activity_id: int
+    description: str
+    priority: str
     start_time: datetime
-    end_time: datetime
-    status: str
+    payload_flag: bool
+    duration: timedelta
+
+# Intended for the satellite to send
+class downlink_activity(BaseModel):
+    image_id: list[int]
+    start_time: datetime
+    downlink_stop: datetime
+
+class satellite_schedule(BaseModel):
+    satellite_name: str
+    schedule_id: int
+    activity_window: tuple[datetime,datetime]
+    image_activities: list[image_activity]
+    maintenance_activities: list[maintenance_activity]
+    downlink_activities: list[downlink_activity]
+
+# Intended for the ground station to recieve
+class downlink_image(BaseModel):
+    image_id: list[int]
+    duration_of_downlink: timedelta
+    size_of_image: float
+    
+class ground_station_request(BaseModel):
+    station_name: str
+    satellite: str
+    acquisition_of_signal: datetime
+    loss_of_signal: datetime
+    satellite_schedule_id: int
+    images_to_be_downlinked: list[downlink_image]
+    

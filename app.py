@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from fastapi.encoders import jsonable_encoder
 from datetime import datetime
-from Models import schedule
+from Models import satellite_schedule, ground_station_request
 
 app = Flask(__name__)
 
@@ -52,9 +52,9 @@ def recieveSatelliteSchedule():
     
     try:
         # Validate request data
-        sat_schedule = schedule(**data)
+        sat_schedule = satellite_schedule(**data)
         recieved_schedule = jsonable_encoder(sat_schedule)
-        
+        print("satellite schedule recieved: ", recieved_schedule )
         return recieved_schedule , 200
     except (KeyError, ValueError) as e:
         print(e)
@@ -65,9 +65,18 @@ def recieveSatelliteSchedule():
 
 @app.route('/ground_station_schedule', methods=['POST'])
 def recieveGroundStationSchedule():
-    requestBody = request.get_json()
+    data = request.get_json()
     
-    return jsonify(requestBody), 200
+    try:
+        # Validate request data
+        sat_schedule = ground_station_request(**data)
+        recieved_schedule = jsonable_encoder(sat_schedule)
+        
+        print("ground station schedule recieved: ", recieved_schedule )
+        return recieved_schedule , 200
+    except (KeyError, ValueError) as e:
+        print(e)
+        return jsonify({"error": "Invalid request data."}), 400
     
 if __name__ == '__main__':
     app.run(debug=True)
