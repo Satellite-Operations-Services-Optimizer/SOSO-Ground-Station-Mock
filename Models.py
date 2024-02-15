@@ -25,13 +25,13 @@ class satellite_schedule(BaseModel):
     satellite_name: str
     schedule_id: int
     activity_window: tuple[datetime,datetime]
-    image_activities: list[image_activity]
-    maintenance_activities: list[maintenance_activity]
-    downlink_activities: list[downlink_activity]
+    image_activities: Optional[list[image_activity]]
+    maintenance_activities: Optional[list[maintenance_activity]]
+    downlink_activities: Optional[list[downlink_activity]]
 
 # Intended for the ground station to recieve
 class downlink_image(BaseModel):
-    image_id: list[int]
+    image_id: int
     duration_of_downlink: timedelta
     size_of_image: float
     
@@ -41,5 +41,5 @@ class ground_station_request(BaseModel):
     acquisition_of_signal: datetime
     loss_of_signal: datetime
     satellite_schedule_id: int
-    images_to_be_downlinked: list[downlink_image]
+    downlink_images : Optional[list[downlink_image]]
     
