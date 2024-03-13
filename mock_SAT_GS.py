@@ -231,23 +231,23 @@ for i in range(1, 50):
             start_position = satellite.at(start_time_skyfield).position.km
             end_position = satellite.at(end_time_skyfield).position.km
 
-            # Check if the satellite stays within the FOV during the transfer time
+            # Check if the satellite stays within the FOV during the transfer time (Capture Time)
             transfer_end_time = start_time + timedelta(seconds=image_type["transfer_time"])
             if start_time <= transfer_end_time <= end_time:
-                if start_position[0] <= end_position[0] and start_position[1] <= end_position[1]:
+                if start_position[0] <= end_position[0] and start_position[1] <= end_position[1]: # x-axis (start_position[0]) and y-axis (start_position[1]) of satellite
                     print(f"Order {i} is acceptable for {satellite.name}.")
                     print(f"Transfer completed at time {transfer_end_time}, lat {order['Latitude']}, lon {order['Longitude']}")
                     
                     # Plot the satellite's position
-                    # plt.figure(figsize=(10, 10))
-                    # plt.plot([order['Longitude']], [order['Latitude']], 'ro')
-                    # plt.xlim(order['Longitude'] - 1, order['Longitude'] + 1)
-                    # plt.ylim(order['Latitude'] - 1, order['Latitude'] + 1)
-                    # plt.grid(True)
-                    # plt.title(f"Satellite {satellite.name} Position for Order {i}")
-                    # plt.xlabel("Longitude")
-                    # plt.ylabel("Latitude")
-                    # plt.show()
+                    plt.figure(figsize=(10, 10))
+                    plt.plot([order['Longitude']], [order['Latitude']], 'ro')
+                    plt.xlim(order['Longitude'] - 1, order['Longitude'] + 1)
+                    plt.ylim(order['Latitude'] - 1, order['Latitude'] + 1)
+                    plt.grid(True)
+                    plt.title(f"Satellite {satellite.name} Position for Order {i}")
+                    plt.xlabel("Longitude")
+                    plt.ylabel("Latitude")
+                    plt.show()
                 else:
                     print(f"Order {i} is unacceptable for {satellite.name}.")
             else:
