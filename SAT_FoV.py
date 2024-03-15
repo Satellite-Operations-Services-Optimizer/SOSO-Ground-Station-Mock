@@ -177,6 +177,8 @@ for satellite in selected_satellites:
     except Exception as e:
         print(f"Error processing satellite {satellite.name}: {e}")
 
+######################## Haversine Formulation ########################
+
 # Haversine formula to calculate the distance between two points on the Earth's surface
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371.0  # Radius of the Earth in kilometers
@@ -198,8 +200,8 @@ def distance_to_horizon(elevation):
 # Function to calculate the approximate field of view area
 def field_of_view_area(elevation):
     horizon_distance = distance_to_horizon(elevation)
-    # Approximate the field of view as a circular segment with the horizon distance as the radius
-    area = pi * (horizon_distance ** 2)
+    # Approximate the field of view as a square with the horizon distance as the diagonal
+    area = (horizon_distance ** 2) / 2
     return area
 
 # Iterate over selected satellites
